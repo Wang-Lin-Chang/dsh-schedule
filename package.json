@@ -1,0 +1,38 @@
+{
+  "name": "dsh-schedule",
+  "version": "0.1.0",
+  "description": "Persistent cross-restart scheduler for DeepSeek Harness: SQLite schedule archive, lease-claim dispatch across sessions, remind + job dual actions, full clock discipline. Every claim carries an experiment number.",
+  "type": "module",
+  "main": "src/plugin.ts",
+  "files": [
+    "src/",
+    "test/",
+    "vendor/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --experimental-strip-types test/plugin-integration.test.ts"
+  },
+  "keywords": [
+    "dsh-plugin",
+    "dsh",
+    "deepseek-harness",
+    "schedule",
+    "scheduler",
+    "sqlite",
+    "cron-alternative"
+  ],
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22.6"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "4.0.1"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "4.0.1",
+    "@deepseek-ai/dsh-tools": "0.1.0-rc.6"
+  },
+  "author": "Wang-Lin-Chang"
+}
