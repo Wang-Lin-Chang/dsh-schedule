@@ -1,43 +1,43 @@
 # dsh-schedule
 
-> **Part of the [DSH plugin suite](https://github.com/Wang-Lin-Chang)** — six Apache-2.0 plugins for DeepSeek Harness. · DSH 插件套件之一：六个 Apache-2.0 插件。
+> **Part of the [DSH plugin suite](https://github.com/Wang-Lin-Chang)** — six Apache-2.0 plugins for DeepSeek Harness.
 
 > Persistent scheduler for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness): reminders and scheduled jobs that **survive session restarts** — SQLite archive, cross-session lease claiming, dual remind/job actions, full clock discipline. Built on [schedule-core](https://github.com/Wang-Lin-Chang/schedule-core). Every claim carries an experiment number.
->
-> 给 DeepSeek Harness 的持久调度：**跨会话跨重启存活**的提醒与定时任务——SQLite 档案馆、跨会话租约认领、remind/job 双模、完整时钟纪律。基于 schedule-core。每个能力声明都带实验编号。
+
+中文版见 [README.zh-CN.md](./README.zh-CN.md)。
 
 [![license](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](./LICENSE)
 [![ci](https://github.com/Wang-Lin-Chang/dsh-schedule/actions/workflows/ci.yml/badge.svg)](https://github.com/Wang-Lin-Chang/dsh-schedule/actions/workflows/ci.yml)
 [![topic: dsh-plugin](https://img.shields.io/badge/topic-dsh--plugin-4d6bfe)](https://github.com/topics/dsh-plugin)
 [![topic: dsh](https://img.shields.io/badge/topic-dsh-4d6bfe)](https://github.com/topics/dsh)
 
-## 为什么存在 / Why this exists
+## Why this exists
 
-官方 dsh-schedule 是**会话内**提醒器：状态存在会话事件日志里，会话一死，调度跟着死。本插件把调度状态搬进 SQLite 档案馆：
+The official dsh-schedule is a **session-local** reminder: state lives in the session event log, so when the session dies, the schedule dies with it. This plugin moves schedule state into a SQLite archive:
 
-| 维度 | 官方 dsh-schedule | dsh-schedule |
+| Dimension | Official dsh-schedule | dsh-schedule |
 |---|---|---|
-| 状态存放 | 会话事件日志（会话死调度死）| SQLite 档案馆 + append-only 事件日志（跨会话）|
-| 到期产物 | [SCHEDULE REMINDER] follow-up | 双模：remind（兼容）/ **job（定时执行命令，落任务档案）** |
-| 派发主体 | 唯一 live owner | 多会话租约认领（原子抢占 + 60s 租约过期重认领）|
-| 时间纪律 | RFC3339 / IANA / DST | **全盘继承，一字不改** |
-| 跨重启 | 无 | 冷启动租约释放 + 到期翻转统一 sweep（EXP-1）|
+| State storage | Session event log (session death = schedule death) | SQLite archive + append-only event log (cross-session) |
+| Due products | [SCHEDULE REMINDER] follow-up | Dual-mode: remind (compatible) / **job (timed command execution, archived task records)** |
+| Dispatch subject | Single live owner | Multi-session lease claiming (atomic preemption + 60s lease-expiry re-claim) |
+| Clock discipline | RFC3339 / IANA / DST | **Fully inherited, unchanged** |
+| Across restarts | None | Cold-start lease release + due-flip unified sweep (EXP-1) |
 
-## 你能得到什么 / What you get
+## What you get
 
-- **跨重启调度**——重启后 dispatcher 自动认领到期记录并派发（真机闭环：离线写入 → 重启 → 自动派发 → 任务归档 completed）。
-- **定时任务自动归档**——`action: 'job'` 到点 spawn 可恢复执行任务（detach-runner 托管 + exit 协议 + pid 收养），输出并入 jobs 档案，任何会话可读。
-- **定时提醒**——`action: 'remind'` 到点给创建会话发 `[SCHEDULE REMINDER]` follow-up；会话不 live 时保持 overdue 下周期重试（不丢提醒）。
-- **多会话安全**——单条条件 UPDATE 的租约抢占，两个会话同时在线也不会双派发（fuzz I5：租约不双持）。
-- **三平台 job 执行**——job 的 runner 按平台选：Windows ACL 沙箱版 / Linux chattr+bwrap 版 / macOS uchg+sandbox-exec 版（协议全对齐，见 [dsh-cross-platform](https://github.com/Wang-Lin-Chang/dsh-cross-platform) / [dsh-macos](https://github.com/Wang-Lin-Chang/dsh-macos)）。
+- **Scheduling across restarts** — after a restart the dispatcher automatically claims due records and dispatches them (real-machine closed loop: offline write → restart → automatic dispatch → task archived as completed).
+- **Automatic task archiving for scheduled jobs** — `action: 'job'` spawns a recoverable task on schedule (detach-runner supervision + exit protocol + pid adoption); output joins the jobs archive, readable from any session.
+- **Timed reminders** — `action: 'remind'` sends a `[SCHEDULE REMINDER]` follow-up to the creating session when due; while the session is not live it stays overdue and retries next cycle (no reminder lost).
+- **Multi-session safety** — single conditional-UPDATE lease preemption; two sessions online at once cannot double-dispatch (fuzz I5: no double lease).
+- **Three-platform job execution** — the job runner is chosen per platform: Windows ACL sandbox / Linux chattr+bwrap / macOS uchg+sandbox-exec (protocols aligned; see [dsh-cross-platform](https://github.com/Wang-Lin-Chang/dsh-cross-platform) / [dsh-macos](https://github.com/Wang-Lin-Chang/dsh-macos)).
 
-## 快速开始 / Quick start
+## Quick start
 
 ```sh
 dsh plugin --profile <name> add "github:Wang-Lin-Chang/dsh-schedule#v0.1.0"
 ```
 
-工具三件（协议对齐官方名字）：
+Three tools (names aligned with the official ones):
 
 ```
 schedule_create { after_seconds | at | every_seconds, prompt, action?, job_spec?, time_zone? }
@@ -45,29 +45,29 @@ schedule_list
 schedule_delete { id }
 ```
 
-示例：5 分钟后提醒 / 每天 03:00（IANA 时区）跑备份 / 300 秒周期探测。
+Examples: remind in 5 minutes / run a backup daily at 03:00 (IANA time zone) / probe every 300 seconds.
 
-## 验收证据 / Acceptance evidence
+## Acceptance evidence
 
-| 层 | 证据 |
+| Layer | Evidence |
 |---|---|
-| schedule-core | 单元 37 断言 + 时钟乱序 fuzz 200 种子/0 违反 + 实装×模型差分 644 断言/0 失败（见 core 的 EXPERIMENTS.md）|
-| 本壳 | 集成 9 断言（job 桥真实 spawn + exit 协议 + remind live/ghost + 三工具 + DST 拒绝）|
-| 真机 | 离线写入 → 重启自动认领派发 → 任务归档 completed（全链路闭环，真机日志）|
+| schedule-core | 37 unit assertions + wall-clock disorder fuzz 200 seeds/0 violations + implementation×model differential 644 assertions/0 failures (see core's EXPERIMENTS.md) |
+| This shell | 9 integration assertions (real job-bridge spawn + exit protocol + remind live/ghost + three tools + DST rejection) |
+| Real machine | Offline write → restart auto-claim dispatch → task archived as completed (full closed loop, real-machine logs) |
 
-## 诚实边界 / Honest boundaries
+## Honest boundaries
 
-- **at-least-once**：崩溃窗口可能重复派发（设计声明）。
-- **every 只追最新**、**无 Cron/日历规则**、`every_seconds ≥ 300`——官方同款。
-- **remind 仍会话本地**（提醒对象是会话）；**job 才是跨会话**。
-- job 执行的 runner 沙箱语义见三件套后端各自的诚实边界。
-- **离线适用面**：架构上无网络依赖（本地 SQLite 档案馆 + 本地 timer；job 执行是否联网取决于任务本身）；数天级断网长跑未实测，不声称。
-- **Windows CI 环境**：GitHub Actions windows runner 以管理员运行，ACL deny 沙箱在管理员下失效——CI 断言 runner 的 fail-closed 协议（EXIT:-998）；沙箱能力验收在非管理员 Windows 实测（dsh-witness 同款披露）。
+- **at-least-once**: a crash window may double-dispatch (by design).
+- **every tracks only the latest**, **no Cron/calendar rules**, `every_seconds ≥ 300` — same as the official one.
+- **remind stays session-local** (the reminder target is a session); **job is the cross-session one**.
+- Job-runner sandbox semantics live in each backend's own honest-boundaries section.
+- **Offline applicability**: architecturally no network dependency (local SQLite archive + local timer; whether job execution needs the network depends on the task itself); multi-day offline runs are not measured, not claimed.
+- **Windows CI environment**: the GitHub Actions windows runner runs as administrator, where ACL deny sandboxes do not apply — CI asserts the runner's fail-closed protocol (EXIT:-998); sandbox capabilities are measured on non-admin Windows (same disclosure as dsh-witness).
 
-## 开发 / Development
+## Development
 
 ```sh
-npm test   # 壳层集成验收（node --experimental-strip-types）
+npm test   # shell integration acceptance (node --experimental-strip-types)
 ```
 
 ## License
