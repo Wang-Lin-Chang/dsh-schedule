@@ -34,7 +34,7 @@ The official dsh-schedule is a **session-local** reminder: state lives in the se
 ## Quick start
 
 ```sh
-dsh plugin --profile <name> add "github:Wang-Lin-Chang/dsh-schedule#v0.1.0"
+dsh plugin --profile <name> add "github:Wang-Lin-Chang/dsh-schedule#v0.1.1"
 ```
 
 Three tools (names aligned with the official ones):

@@ -1,6 +1,6 @@
 {
   "name": "dsh-schedule",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Persistent cross-restart scheduler for DeepSeek Harness: SQLite schedule archive, lease-claim dispatch across sessions, remind + job dual actions, full clock discipline. Every claim carries an experiment number.",
   "type": "module",
   "main": "src/plugin.ts",

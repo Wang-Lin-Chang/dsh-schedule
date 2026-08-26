@@ -1,4 +1,10 @@
-﻿# Changelog
+# Changelog
+
+## [0.1.1] - 2026-08-26
+
+### Changed
+
+- 语言合规清扫：vendor 注释措辞；README 双语分文件（README.md 英文 + README.zh-CN.md 中文）；CI 三平台矩阵。协议与数字不变。
 
 ## [0.1.0] - 2026-08-16
 

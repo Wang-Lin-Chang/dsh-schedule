@@ -34,7 +34,7 @@ English: [README.md](./README.md)。
 ## 快速开始 / Quick start
 
 ```sh
-dsh plugin --profile <name> add "github:Wang-Lin-Chang/dsh-schedule#v0.1.0"
+dsh plugin --profile <name> add "github:Wang-Lin-Chang/dsh-schedule#v0.1.1"
 ```
 
 工具三件（协议对齐官方名字）：
