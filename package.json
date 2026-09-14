@@ -3,16 +3,20 @@
   "version": "0.1.1",
   "description": "Persistent cross-restart scheduler for DeepSeek Harness: SQLite schedule archive, lease-claim dispatch across sessions, remind + job dual actions, full clock discipline. Every claim carries an experiment number.",
   "type": "module",
-  "main": "src/plugin.ts",
+  "main": "dist/plugin.js",
   "files": [
     "src/",
     "test/",
     "vendor/",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "dist/",
+    "cordis.patch.yml"
   ],
   "scripts": {
-    "test": "node --experimental-strip-types test/plugin-integration.test.ts"
+    "test": "node --experimental-strip-types test/plugin-integration.test.ts",
+    "build": "npx esbuild src/plugin.ts --bundle --platform=node --format=esm --outdir=dist --packages=external",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "dsh-plugin",
@@ -32,7 +36,13 @@
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "4.0.1",
-    "@deepseek-ai/dsh-tools": "0.1.0-rc.6"
+    "@deepseek-ai/dsh-tools": "0.1.0-rc.6",
+    "esbuild": "^0.25.0"
   },
-  "author": "Wang-Lin-Chang"
+  "author": "Wang-Lin-Chang",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
 }
