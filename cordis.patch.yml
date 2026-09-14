@@ -1,0 +1,4 @@
+- insert:
+    - id: dsh-schedule
+      name: ./dist/plugin.js
+      config: {}
